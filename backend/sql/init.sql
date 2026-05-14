@@ -134,4 +134,4 @@ CREATE TABLE IF NOT EXISTS `doc_share` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='分享表';
 
 INSERT INTO `sys_user` (`username`, `password`, `nickname`, `email`, `status`) 
-VALUES ('admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', '管理员', 'admin@enterprise.com', 1);
+VALUES ('admin', '$2a$10$Eq9u9tI8E1WwH9wY9Pn5QOv5pR4XsF3E6a8Nk2J8G3bYp9QvE5rYq', '管理员', 'admin@enterprise.com', 1);

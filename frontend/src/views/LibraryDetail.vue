@@ -98,7 +98,7 @@
               @click="previewDocument(doc)"
             >
               <div class="file-icon" :class="doc.fileType">
-                <el-icon :size="48">{{ getFileIcon(doc.fileType) }}</el-icon>
+                <component :is="getFileIcon(doc.fileType)" :size="48" />
               </div>
               <div class="file-name" :title="doc.name">{{ doc.name }}</div>
               <div class="file-meta">
@@ -107,14 +107,24 @@
               </div>
               <div class="file-actions">
                 <el-button link type="primary" size="small" @click.stop="previewDocument(doc)">预览</el-button>
-                <el-button link type="success" size="small" @click.stop="downloadDocument(doc)">下载</el-button>
+                <el-button 
+                  v-if="canOnlineEdit(doc)" 
+                  link 
+                  type="success" 
+                  size="small" 
+                  @click.stop="editDocument(doc)"
+                >
+                  <el-icon><Edit /></el-icon>
+                  编辑
+                </el-button>
+                <el-button link type="primary" size="small" @click.stop="downloadDocument(doc)">下载</el-button>
                 <el-button link type="warning" size="small" @click.stop="shareDocument(doc)">分享</el-button>
                 <el-dropdown @click.stop>
                   <el-button link type="primary" size="small">更多</el-button>
                   <template #dropdown>
                     <el-dropdown-menu>
                       <el-dropdown-item @click.stop="renameDocument(doc)">重命名</el-dropdown-item>
-                      <el-dropdown-item @click.stop="showMoveDialog(doc)">移动</el-dropdown-item>
+                      <el-dropdown-item @click.stop="openMoveDialog(doc)">移动</el-dropdown-item>
                       <el-dropdown-item @click.stop="deleteDocument(doc)" divided>删除</el-dropdown-item>
                     </el-dropdown-menu>
                   </template>
@@ -201,11 +211,12 @@
             </el-radio-group>
           </el-form-item>
         </el-form>
-        <template #footer>
-          <el-button @click="showShareDialog = false">取消</el-button>
-          <el-button type="primary" @click="createShare">生成分享链接</el-button>
-        </template>
       </div>
+      <template #footer>
+        <el-button v-if="!currentShare" @click="showShareDialog = false">取消</el-button>
+        <el-button v-if="!currentShare" type="primary" @click="createShare">生成分享链接</el-button>
+        <el-button v-else @click="showShareDialog = false">关闭</el-button>
+      </template>
     </el-dialog>
 
     <el-dialog v-model="showMoveDialog" title="移动到" width="400px">
@@ -250,7 +261,8 @@ import {
   renameDocument as renameDocApi,
   moveDocument as moveDocApi,
   createShare as createShareApi,
-  cancelShare as cancelShareApi
+  cancelShare as cancelShareApi,
+  checkOnlyOfficeSupport
 } from '@/api/document'
 
 const route = useRoute()
@@ -368,7 +380,7 @@ const loadCurrentFolderItems = async () => {
   try {
     const [foldersRes, docsRes] = await Promise.all([
       getFoldersByLibrary(libraryId.value).catch(() => ({ data: [] })),
-      listDocuments({
+      listDocsApi({
         libraryId: libraryId.value,
         folderId: currentFolderId.value,
         current: docPagination.current,
@@ -550,8 +562,20 @@ const handleUpload = async () => {
   }
 }
 
+const canOnlineEdit = (doc) => {
+  if (!doc) return false
+  const type = doc.fileType
+  const textTypes = ['markdown', 'csv', 'flowchart', 'mindmap']
+  const officeTypes = ['word', 'excel', 'ppt']
+  return textTypes.includes(type) || officeTypes.includes(type)
+}
+
 const previewDocument = (doc) => {
   router.push(`/preview/${doc.id}`)
+}
+
+const editDocument = (doc) => {
+  router.push(`/editor/${doc.id}`)
 }
 
 const downloadDocument = (doc) => {
@@ -575,7 +599,7 @@ const renameDocument = async (doc) => {
   }
 }
 
-const showMoveDialog = (doc) => {
+const openMoveDialog = (doc) => {
   currentMoveDoc.value = doc
   moveTargetFolderId.value = 0
   showMoveDialog.value = true

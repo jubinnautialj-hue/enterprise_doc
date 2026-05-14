@@ -61,3 +61,11 @@ knife4j:
   enable: true
   setting:
     language: zh_cn
+
+elasticsearch:
+  uris: http://10.10.5.44:9200
+
+onlyoffice:
+  document-server:
+    url: http://10.10.5.44:9085
+    secret: onlyoffice-jwt-secret-key-2024-very-long-and-secure-key-for-document-server

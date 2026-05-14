@@ -21,6 +21,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.List;
 
 @Tag(name = "文档管理")
 @RestController
@@ -96,5 +99,65 @@ public class DocumentController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename)
                 .contentLength(file.length())
                 .body(new FileSystemResource(file));
+    }
+
+    @Operation(summary = "全文搜索文档")
+    @GetMapping("/search")
+    public Result<List<DocumentVO>> search(
+            @RequestParam String keyword,
+            @RequestParam(required = false) Long libraryId,
+            @RequestParam(defaultValue = "1") Long current,
+            @RequestParam(defaultValue = "20") Long size) {
+        return Result.success(documentService.search(keyword, libraryId, current, size));
+    }
+
+    @Operation(summary = "批量导入文档")
+    @PostMapping("/import")
+    public Result<List<DocumentVO>> importDocuments(
+            @RequestParam Long libraryId,
+            @RequestParam(required = false) Long folderId,
+            @RequestParam("files") MultipartFile[] files) throws IOException {
+        List<DocumentVO> results = new ArrayList<>();
+        for (MultipartFile file : files) {
+            if (file != null && !file.isEmpty()) {
+                results.add(documentService.upload(libraryId, folderId, file));
+            }
+        }
+        return Result.success(results);
+    }
+
+    @Operation(summary = "创建空文档")
+    @PostMapping("/create-empty")
+    public Result<DocumentVO> createEmpty(
+            @RequestParam Long libraryId,
+            @RequestParam(required = false) Long folderId,
+            @RequestParam String name,
+            @RequestParam String docType) {
+        return Result.success(documentService.createEmptyDocument(libraryId, folderId, name, docType));
+    }
+
+    @Operation(summary = "重建搜索索引")
+    @PostMapping("/rebuild-index")
+    public Result<Void> rebuildIndex() {
+        documentService.rebuildIndex();
+        return Result.success();
+    }
+
+    @Operation(summary = "获取文档内容（用于在线编辑）")
+    @GetMapping("/{id}/content")
+    public Result<String> getContent(@PathVariable Long id) throws IOException {
+        return Result.success(documentService.getDocumentContent(id));
+    }
+
+    @Operation(summary = "保存文档内容（用于在线编辑）")
+    @PostMapping("/{id}/content")
+    public Result<DocumentVO> saveContent(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) throws IOException {
+        String content = body.get("content");
+        if (content == null) {
+            content = "";
+        }
+        return Result.success(documentService.saveDocumentContent(id, content));
     }
 }

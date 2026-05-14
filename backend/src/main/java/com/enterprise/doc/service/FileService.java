@@ -8,8 +8,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -106,5 +111,35 @@ public class FileService {
     public boolean deleteFile(String storagePath) {
         File file = new File(uploadPath, storagePath);
         return file.exists() && file.delete();
+    }
+
+    public String downloadAndSaveFile(String fileUrl, String extension) throws IOException {
+        String datePath = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+        Path uploadDir = Paths.get(uploadPath, datePath);
+        if (!Files.exists(uploadDir)) {
+            Files.createDirectories(uploadDir);
+        }
+
+        String newFilename = IdUtil.simpleUUID() + (StrUtil.isNotBlank(extension) ? "." + extension : "");
+        Path filePath = uploadDir.resolve(newFilename);
+
+        URL url = new URL(fileUrl);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setConnectTimeout(30000);
+        connection.setReadTimeout(60000);
+
+        try (InputStream in = new BufferedInputStream(connection.getInputStream());
+             FileOutputStream fos = new FileOutputStream(filePath.toFile())) {
+
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = in.read(buffer)) != -1) {
+                fos.write(buffer, 0, bytesRead);
+            }
+        } finally {
+            connection.disconnect();
+        }
+
+        return datePath + "/" + newFilename;
     }
 }

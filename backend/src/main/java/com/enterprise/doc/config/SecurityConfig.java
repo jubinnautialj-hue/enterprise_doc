@@ -41,9 +41,12 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/test/**").permitAll()
                         .requestMatchers("/share/verify/**").permitAll()
                         .requestMatchers("/doc/view/**").permitAll()
                         .requestMatchers("/doc/download/**").permitAll()
+                        .requestMatchers("/onlyoffice/callback/**").permitAll()
+                        .requestMatchers("/onlyoffice/download/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/doc.html", "/webjars/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()

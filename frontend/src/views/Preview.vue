@@ -7,7 +7,7 @@
           返回
         </el-button>
         <div class="file-info" v-loading="loading">
-          <el-icon class="file-icon" :class="doc?.fileType">{{ getFileIcon(doc?.fileType) }}</el-icon>
+          <component :is="getFileIcon(doc?.fileType)" class="file-icon" :class="doc?.fileType" :size="32" />
           <div>
             <h3>{{ doc?.name }}</h3>
             <p>{{ formatSize(doc?.fileSize) }} · {{ doc?.viewCount || 0 }} 次浏览</p>
@@ -15,6 +15,10 @@
         </div>
       </div>
       <div class="header-right">
+        <el-button v-if="canEdit" type="success" @click="goToEditor">
+          <el-icon><Edit /></el-icon>
+          在线编辑
+        </el-button>
         <el-button type="primary" @click="downloadDoc">
           <el-icon><Download /></el-icon>
           下载
@@ -85,6 +89,14 @@ const textContent = ref('')
 
 const docId = computed(() => route.params.id)
 
+const canEdit = computed(() => {
+  if (!doc.value) return false
+  const type = doc.value.fileType
+  const textTypes = ['markdown', 'csv', 'flowchart', 'mindmap']
+  const officeTypes = ['word', 'excel', 'ppt']
+  return textTypes.includes(type) || officeTypes.includes(type)
+})
+
 const isImage = computed(() => doc.value?.fileType === 'image')
 const isPdf = computed(() => doc.value?.fileType === 'pdf')
 const isMarkdown = computed(() => doc.value?.fileType === 'markdown')
@@ -131,6 +143,10 @@ const goBack = () => {
 
 const downloadDoc = () => {
   window.open(`/api/document/${docId.value}/download`, '_blank')
+}
+
+const goToEditor = () => {
+  router.push(`/editor/${docId.value}`)
 }
 
 const loadDoc = async () => {

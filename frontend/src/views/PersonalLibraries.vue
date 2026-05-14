@@ -130,7 +130,12 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { listPersonalLibraries, createLibrary, updateLibrary, deleteLibrary } from '@/api/library'
+import {
+  listPersonalLibraries,
+  createLibrary as createLibraryApi,
+  updateLibrary as updateLibraryApi,
+  deleteLibrary as deleteLibraryApi
+} from '@/api/library'
 
 const router = useRouter()
 
@@ -207,7 +212,7 @@ const deleteLibrary = async (library) => {
     await ElMessageBox.confirm('确定要删除该文库吗？删除后无法恢复', '提示', {
       type: 'warning'
     })
-    await deleteLibrary(library.id)
+    await deleteLibraryApi(library.id)
     ElMessage.success('删除成功')
     loadLibraries()
   } catch (error) {
@@ -225,7 +230,7 @@ const handleCreate = async () => {
 
   creating.value = true
   try {
-    await createLibrary(createForm)
+    await createLibraryApi(createForm)
     ElMessage.success('创建成功')
     showCreateDialog.value = false
     createForm.name = ''
@@ -247,7 +252,7 @@ const handleEdit = async () => {
 
   editing.value = true
   try {
-    await updateLibrary(editForm.id, {
+    await updateLibraryApi(editForm.id, {
       name: editForm.name,
       description: editForm.description
     })

@@ -31,7 +31,7 @@
       <template v-else>
         <div class="document-card" @click="openDocument">
           <div class="document-icon" :class="doc?.fileType">
-            <el-icon :size="48">{{ getFileIcon(doc?.fileType) }}</el-icon>
+            <component :is="getFileIcon(doc?.fileType)" :size="48" />
           </div>
           <div class="document-info">
             <h3 class="document-name">{{ doc?.name }}</h3>

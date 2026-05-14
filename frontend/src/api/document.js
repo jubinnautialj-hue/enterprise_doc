@@ -91,3 +91,61 @@ export function getShareDocument(shareCode) {
     method: 'get'
   })
 }
+
+export function searchDocuments(params) {
+  return request({
+    url: '/document/search',
+    method: 'get',
+    params
+  })
+}
+
+export function importDocuments(data, onProgress) {
+  return request({
+    url: '/document/import',
+    method: 'post',
+    data,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    },
+    onUploadProgress: onProgress
+  })
+}
+
+export function createEmptyDocument(data) {
+  return request({
+    url: '/document/create-empty',
+    method: 'post',
+    params: data
+  })
+}
+
+export function getDocumentContent(id) {
+  return request({
+    url: '/document/' + id + '/content',
+    method: 'get'
+  })
+}
+
+export function saveDocumentContent(id, content) {
+  return request({
+    url: '/document/' + id + '/content',
+    method: 'post',
+    data: { content }
+  })
+}
+
+export function getOnlyOfficeConfig(id, canEdit = true) {
+  return request({
+    url: '/onlyoffice/config/' + id,
+    method: 'get',
+    params: { canEdit }
+  })
+}
+
+export function checkOnlyOfficeSupport(id) {
+  return request({
+    url: '/onlyoffice/support/' + id,
+    method: 'get'
+  })
+}
